@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'vt-video-trainer-basic'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C646303A803E4B57AA6D977AA97B30EC }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_778D6BCFBDAC4C4BB6A260F22D1BEB23 }}
