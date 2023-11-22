@@ -1,0 +1,1 @@
+# vt-training-generator-basic
