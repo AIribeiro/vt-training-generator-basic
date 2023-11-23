@@ -11,7 +11,11 @@ from collections.abc import MutableMapping
 
 # External Libraries Imports
 import pandas as pd
-import openai
+
+
+
+
+
 import streamlit as st
 import requests
 
@@ -60,10 +64,20 @@ DESCRIPTION = "Simple avatar synthesis description"
 SERVICE_HOST = "customvoice.api.speech.microsoft.com"
 
 # OpenAI Configuration
-openai.api_key = "35fcd9150f044fdcbca33b5c3318a1f2"  # Set OpenAI API key
-openai.api_type = "azure"  # Set the API type to Azure
-openai.api_base = "https://vt-generative-ai-dev.openai.azure.com/"  # Set the API endpoint
-openai.api_version = "2023-09-15-preview"  # Set the API version
+#openai.api_key = "35fcd9150f044fdcbca33b5c3318a1f2"  # Set OpenAI API key
+#openai.api_type = "azure"  # Set the API type to Azure
+#openai.api_base = "https://vt-generative-ai-dev.openai.azure.com/"  # Set the API endpoint
+#openai.api_version = "2023-09-15-preview"  # Set the API version
+
+#from openai import AzureOpenAI
+from openai import AzureOpenAI
+
+client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",
+azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/",
+api_version="2023-09-15-preview")
+
+
+
 
 # Deployment Configuration
 deployment_id_4 = "vt-text-davinci-003"  # Set the deployment ID
@@ -365,8 +379,17 @@ def app():
 
     if st.button('Generate the Content for the Training'):
         prompt = "According to the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f" in {language}." 
-        response = openai.Completion.create(
-            engine=deployment_id_4,  # Replace with your deployment ID
+        
+        
+
+        # gets the API Key from environment variable AZURE_OPENAI_API_KEY
+        client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview"
+        )
+
+
+        
+        response = client.completions.create(model=deployment_id_4,  # Replace with your deployment ID
+            #engine=deployment_id_4,  # Replace with your deployment ID
             prompt=prompt,
             temperature=0.2,
             max_tokens=2000,
@@ -375,7 +398,7 @@ def app():
             presence_penalty=0,
             stop=None
         )
-        content = response['choices'][0]['text']
+        content = response.choices[0].text
         content= str(response.choices[0].text.strip()) 
         
         #return content
