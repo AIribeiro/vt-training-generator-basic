@@ -3,3 +3,4 @@ streamlit
 #azure-data-tables
 #azure-storage-file-share
 streamlit-feedback
+streamlit-player
