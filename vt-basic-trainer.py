@@ -367,7 +367,7 @@ def app():
     technique = st.sidebar.selectbox(
         'Select the Training generation Function You Want:', 
         #["Generate a training about AI and Analytics", ]
-        ["Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic", "Bring your own content!"]
+        ["Generate a training about any other topic", "Bring your own content!","Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", ]
     )
 
     # Define the mapping of languages to TTS voice codes
