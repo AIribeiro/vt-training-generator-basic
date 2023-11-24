@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'vt-training-ai'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B40D7AE51B20406C86C872D4ACAB68A9 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DDE1BE26F8EE42D08B55E10BAA01345B }}
