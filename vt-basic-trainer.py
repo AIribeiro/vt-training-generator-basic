@@ -1,48 +1,139 @@
 # Standard Library Imports
-import re
 import json
 import random
 import hashlib
 import asyncio
 import csv
 import uuid
+import time
 from datetime import datetime, timedelta
 from collections.abc import MutableMapping
 
-# External Libraries Imports
+# Natural Language Processing Imports
+import nltk
+from nltk.tokenize import sent_tokenize
+
+# Data Handling Imports
 import pandas as pd
 
-
-
-
-
+# Web Framework Imports
 import streamlit as st
+
+# Networking and HTTP Requests
 import requests
 
-# Azure Imports
+# Azure Cloud Services Imports
 from azure.storage.blob import BlobServiceClient
 from azure.storage.fileshare import ShareServiceClient, generate_account_sas, ResourceTypes, AccountSasPermissions
-from azure.data.tables import TableServiceClient, generate_account_sas, ResourceTypes, AccountSasPermissions
+from azure.data.tables import TableServiceClient
 from azure.core.credentials import AzureNamedKeyCredential, AzureSasCredential
 
-
-# Streamlit Feedback Import
+# Streamlit Extensions for Feedback and Media Playback
 from streamlit_feedback import streamlit_feedback
 from streamlit_player import st_player
-# Initialize some variables
-now = str(uuid.uuid4())
 
-import json
+# Logging and File System Utilities
 import logging
 import os
 import sys
-import time
 from pathlib import Path
 
-import requests
+# Initialize a unique identifier for the current session
+now = str(uuid.uuid4())
 
-import nltk
-from nltk.tokenize import sent_tokenize
+# Download necessary NLTK data
+nltk.download('punkt')
+
+
+# Initialize some variables
+now = str(uuid.uuid4())
+
+
+# Azure Configuration
+# Define the connection string for Azure Table Service
+connection_string = (
+    "SharedAccessSignature=sv=2021-10-04&ss=btqf&srt=sco&st=2023-11-23T15%3A37%3A11Z&se=2025-10-18T14%3A37%3A00Z"
+    "&sp=rwdxftlacup&sig=h64z06wvj3ejnIuQQEH3A1SJjVfF46Hos4ctc7Ol%2Fac%3D;"
+    "BlobEndpoint=https://vtgenerativeaistorage.blob.core.windows.net/;"
+    "FileEndpoint=https://vtgenerativeaistorage.file.core.windows.net/;"
+    "QueueEndpoint=https://vtgenerativeaistorage.queue.core.windows.net/;"
+    "TableEndpoint=https://vtgenerativeaistorage.table.core.windows.net/;"
+)
+azure_table_service = TableServiceClient.from_connection_string(conn_str=connection_string)
+
+
+
+def generate_new_session_id():
+    return str(uuid.uuid4())
+
+def capture_feedback():
+    feedback = streamlit_feedback(
+        feedback_type="thumbs",
+        optional_text_label="[Optional] Please provide an explanation for your feedback.",
+    )
+    user_feedback = str(feedback)
+    return user_feedback
+
+def log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id):
+    """
+    Log user interaction data to Azure Table.
+
+    Args:
+        user_input (str): User's input text.
+        technique (str): Technique used for content generation.
+        content (str): Generated content.
+        language (str): Selected language.
+        video_url (str): URL of the generated video.
+        chat_session_id (str): Current session ID.
+    """
+    #now = datetime.datetime.now()  # Current time for RowKey
+
+    # Create a dictionary to hold the new log data
+    new_log_data = {
+        'PartitionKey': 'LogData',
+        'RowKey': str(now),
+        'UserInput': user_input,
+        'UsedTechnique': technique,
+        'Content': content,
+        'Language': language,
+        'Video': video_url,
+        'Feedback': user_feedback,
+        'SessionID': chat_session_id
+    }
+
+    # Get a reference to a table
+    table_client = azure_table_service.get_table_client('vttraininggeneratortable')
+
+    # Fetch all entities from the table
+    entities = table_client.list_entities()
+
+    # Organize entities by SessionID
+    sessions_dict = {}
+    for entity in entities:
+        session_id = entity.get('SessionID')  # Use get() method to avoid KeyError
+        if session_id:
+            if session_id not in sessions_dict:
+                sessions_dict[session_id] = []
+            sessions_dict[session_id].append(entity)
+
+    # Check if there are records with the same SessionID
+    existing_records = sessions_dict.get(chat_session_id, [])
+    if existing_records:
+        # Merge old records with the new log data
+        merged_record = {**new_log_data, 'UserInput': ' '.join([record['UserInput'] for record in existing_records] + [user_input])}
+        # Insert merged record
+        table_client.create_entity(entity=merged_record)
+    else:
+        # If no existing records with the same SessionID, simply insert the new log data
+        table_client.create_entity(entity=new_log_data)
+
+    # Move deletion check outside the existing_records block
+    for entity in entities:
+        # Check if the 'UserInput' or 'Content' field is " " or "None" and delete the entity if it is
+        if entity.get('UserInput') in [" ", "None"] or entity.get('Content') in [" ", "None"]:
+            table_client.delete_entity(entity['PartitionKey'], entity['RowKey'])
+
+
 
 # Ensure the necessary NLTK data is downloaded
 nltk.download('punkt')
@@ -82,15 +173,6 @@ api_version="2023-09-15-preview")
 # Deployment Configuration
 deployment_id_4 = "vt-text-davinci-003"  # Set the deployment ID
 deployment_id_turbo ="vt-gpt-35-turbo"
-
-volvo_news= """
-Welcome to a new era at Volvo Trucks, where Artificial Intelligence and Data Analytics are not just transforming our vehicles but also revolutionizing our business landscape. 
-
-Every day, our trucks gather mountains of data, and with AI, we're turning these insights into better fleet management solutions and customer experiences. From predictive maintenance to personalized service offerings, we're leveraging data to enhance reliability and customer satisfaction. In our commercial strategies, AI helps analyze market trends and customer feedback, guiding us in developing innovative solutions that meet evolving needs. Data analytics also streamlines our supply chain, ensuring efficiency from production to delivery. 
-
-By integrating AI and analytics into every facet of our operations, from product development to sales strategies, Volvo Trucks is not just building better vehicles, but also forging stronger connections with our customers and leading the way in a data-driven future.” 
-
-"""
 
 
 
@@ -175,12 +257,60 @@ Refer directly to the employees, when explaining the concepts provided by the us
 
 """
 
+
+
+
+#user_input = user_message
+user_feedback = ""
+chat_session_id=""
+chat_session_id_temp=""
+chat_answer_temp=""
+chat_question_temp=""
+user_feedback_temp =""
+chat_session_id_temp=""
+technique=""
+chat_interactions=0
+
+
+
+
+
+if 'video_url' not in st.session_state:
+    st.session_state['video_url'] = None
+
+
+if 'chat_question' not in st.session_state:
+    st.session_state['chat_question'] = None
+
+if 'chat_feedback' not in st.session_state:
+    st.session_state['chat_feedback'] = None    
+
+
+    
+# Initialize session if not already initialized
+if 'chat_session_id' not in st.session_state:
+    st.session_state['chat_session_id'] = generate_new_session_id()
+
+# Initialize the counter for tracking chatbot responses
+if 'response_counter' not in st.session_state:
+    st.session_state['response_counter'] = 0
+
+# This variable will hold the chatbot's answer once the "Get Ideas" button is pressed.
+chatbot_answer = None
+
+# Initialize session state variables if they don't exist
+if 'chatbot_answer' not in st.session_state:
+    st.session_state['chat_answer'] = ""
+
+
+
 def get_translation_explanation(action):
     explanations = {
         "Generate a training about AI and Analytics": "Generate a video explainer about the AI and Analytics topic suggested by the user.",
         "Generate a training about Digital Marketing": "Generate a video explainer about the Digital Marketing topic suggested by the user.",
         "Generate a training about Truck Sales": "Generate a video explainer about the Trucks Sales topic suggested by the user.",
-        "Generate a training about any other topic": "Generate a video explainer about the topic suggested by the user, but related to Volvo Trucks."
+        "Generate a training about any other topic.": "Generate a video explainer about the topic suggested by the user, but related to Volvo Trucks.",
+        "Bring your own content!": "If you already have the content for the video, just copy & paste it in the text area and generate the video."
         
     }
     return explanations.get(action, "Action not recognized. Please try another.")
@@ -190,13 +320,23 @@ def get_translation_prompt(action):
         "Generate a training about AI and Analytics": "Generate a 1-minute video explainer about the AI and Analytics topic based on the user input: ",
         "Generate a training about Digital Marketing": "Generate a 1-minute video explainer about the Digital Marketing topic based on the user input: ",
         "Generate a training about Truck Sales": "Generate a 1-minute video explainer about the Trucks Sales topic based on the user input: ",
-        "Generate a training about any other topic": "Generate a 1-minute video explainer about the topic based on the user input, that must be related to Volvo Trucks."
+        "Generate a training about any other topic.": "Generate a 1-minute video explainer about the topic based on the user input, that must be related to Volvo Trucks.",
+        "Bring your own content!": "Generate an explainer video using only and exclusively the content provided by the user. "
         
     }
     return prompts.get(action, "Topic not recognized or relevant to Volvo Trucks. Please try another.")
 
-def generate_new_session_id():
-    return str(uuid.uuid4())
+suggested_content = {
+        "Generate a training about AI and Analytics": "Explain how AI and Analytics are used in predictive maintenance for Volvo Trucks.",
+        "Generate a training about Digital Marketing": "Explain the role of digital marketing in promoting the latest range of Volvo electric trucks",
+        "Generate a training about Truck Sales": "Provide an overview of effective sales strategies for Volvo Trucks in emerging markets.",
+        "Generate a training about any other topic.": "Describe the importance of sustainability in Volvo Trucks' manufacturing processes.",
+        "Bring your own content!": "If you already have the content for the video, just copy & paste it in the text area and generate the video."
+    
+    }
+
+
+
 
 
 content=""    
@@ -205,11 +345,12 @@ content=""
 def app():
     with st.expander("How to Use This App"):
         st.write("""
-            1. Select a Translation Function from the sidebar.
-            2. Choose a language for translation.
-            3. Enter the text you want to translate in the provided text area.
-            4. Click 'Translate' to get the AI-generated translation.
-            5. Provide your feedback on the translation quality.
+            1. Select a Training generation Function from the sidebar. ( At this moment, only AI & Data Analytics training generation is available. More options will be added soon.
+            2. Choose a language for Training.
+            3. Enter a detailed description of the training you want to create in the provided text area.If you already have the content to generate the video, simply choose the option "Bring Your Own Content" and add it to the text box.
+            4. Click 'Generate the content for the training' to get the AI-generated Content.
+            5. Watch the training.
+            6. If the generated video is OK, download it by clicking on the link "Click here to download the video".
         """)
 
     with st.expander("**Important Note:**"):
@@ -219,11 +360,14 @@ def app():
             It's essential you cross-verify the AI-generated information with reliable sources or through consultation with experts in the field. 
 
             Additionally, be mindful of data privacy and security: DO NOT SHARE any confidential data, personal or sensitive data, or any proprietary information with the AI system that could compromise the integrity and security of our corporate data.
+            
+            You can check the technical details on this AI System [here](https://volvogroup.sharepoint.com/:u:/r/sites/coll-vt-c4a-public/SitePages/Exploring-the.aspx). 
         """)
 
     technique = st.sidebar.selectbox(
         'Select the Training generation Function You Want:', 
-        ["Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic"]
+        #["Generate a training about AI and Analytics", ]
+        ["Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic", "Bring your own content!"]
     )
 
     # Define the mapping of languages to TTS voice codes
@@ -245,8 +389,12 @@ def app():
     # Assign the corresponding voice code to the variable 'voice'
     selected_voice = language_to_voice[language]
     
+    
     st.sidebar.subheader('Pick your area of interest')
-    st.sidebar.write(get_translation_explanation(technique))
+    st.sidebar.write(get_translation_explanation(technique)) 
+    st.sidebar.subheader('Suggested Example')
+    
+    st.sidebar.write(suggested_content.get(technique, ""))
 
     
     
@@ -315,6 +463,8 @@ def app():
             if response.json()['status'] == 'Succeeded':
                 download_url = response.json()["outputs"]["result"]
                 logger.info(f'Batch synthesis job succeeded, download URL: {download_url}')
+                st.session_state['video_url']= download_url
+                
                 st.success('Batch synthesis job succeeded!')
                 #video_file = open(download_url, 'rb')
                 #video_bytes = video_file.read()
@@ -378,79 +528,134 @@ def app():
     user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="Generate a training explaining", key="user_input")
 
     if st.button('Generate the Content for the Training'):
-        prompt = "According to the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f" in {language}." 
         
-        
+        if technique == "Bring your own content!":
+            prompt = "Use the following user input: " + user_input + f" in {language}. Keep it exactly as it is. Do not change nothing." 
+            # gets the API Key from environment variable AZURE_OPENAI_API_KEY
+            client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview"
+            )
 
-        # gets the API Key from environment variable AZURE_OPENAI_API_KEY
-        client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview"
-        )
 
 
-        
-        response = client.completions.create(model=deployment_id_4,  # Replace with your deployment ID
-            #engine=deployment_id_4,  # Replace with your deployment ID
-            prompt=prompt,
-            temperature=0.2,
-            max_tokens=2000,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0,
-            stop=None
-        )
-        content = response.choices[0].text
-        content= str(response.choices[0].text.strip()) 
-        
-        #return content
-        with st.spinner("Generating the content...It will take only 1 minute..."):
+            response = client.completions.create(model=deployment_id_4,  # Replace with your deployment ID
+                #engine=deployment_id_4,  # Replace with your deployment ID
+                prompt=prompt,
+                temperature=0.2,
+                max_tokens=2000,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0,
+                stop=None
+            )
+            content = response.choices[0].text
+            content= str(response.choices[0].text.strip())
+            chat_session_id = st.session_state['chat_session_id']
+            #log_to_azure_table(user_input, technique, content)
+
+            #return content
+            with st.spinner("Generating the content...It will take only 1 minute..."):
+
+
+                        cleaned_content = remove_sentences(content, sentences_to_remove)
+
+                        st.write("This is the content you provided: " + str(cleaned_content))
+                        job_id = submit_synthesis(cleaned_content)
+
+                        if job_id is not None:
+                            with st.spinner("Generating the video...It may take some minutes...but it's worth waiting"):
+                                while True:
+                                    status = get_synthesis(job_id)
+                                    if status == 'Succeeded':
+                                        logger.info('batch avatar synthesis job succeeded')
+                                        st.success("Video generated by Artificial Intelligence!")
+                                        user_feedback = capture_feedback()
+                                        log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id)
+                                        break
+                                    elif status == 'Failed':
+                                        logger.error('batch avatar synthesis job failed')
+                                        st.error("Video generation failed. Please try again later")
+                                        break
+                                    else:
+                                        logger.info(f'batch avatar synthesis job is still running, status [{status}]')
+                                        time.sleep(5) 
             
-                    
-                    cleaned_content = remove_sentences(content, sentences_to_remove)
-                    
-                    st.write("This is the video content: " + str(cleaned_content))
-                    job_id = submit_synthesis(cleaned_content)
+            
+            
+            
+            
+            
+        else:
+            prompt = "According to the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f" in {language}."
 
-                    if job_id is not None:
-                        with st.spinner("Generating the video...It may take some minutes...but it's worth waiting"):
-                            while True:
-                                status = get_synthesis(job_id)
-                                if status == 'Succeeded':
-                                    logger.info('batch avatar synthesis job succeeded')
-                                    st.success("Video generated by Artificial Intelligence!")
-                                    break
-                                elif status == 'Failed':
-                                    logger.error('batch avatar synthesis job failed')
-                                    st.error("Video generation failed. Please try again later")
-                                    break
-                                else:
-                                    logger.info(f'batch avatar synthesis job is still running, status [{status}]')
-                                    time.sleep(5)                
+            # gets the API Key from environment variable AZURE_OPENAI_API_KEY
+            client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview"
+            )
+
+
+
+            response = client.completions.create(model=deployment_id_4,  # Replace with your deployment ID
+                #engine=deployment_id_4,  # Replace with your deployment ID
+                prompt=prompt,
+                temperature=0.2,
+                max_tokens=2000,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0,
+                stop=None
+            )
+            content = response.choices[0].text
+            content= str(response.choices[0].text.strip())
+            chat_session_id = st.session_state['chat_session_id']
+            #log_to_azure_table(user_input, technique, content)
+            
+
+            #return content
+            with st.spinner("Generating the content...It will take only 1 minute..."):
+
+
+                        cleaned_content = remove_sentences(content, sentences_to_remove)
+
+                        st.write("This is the video content generated by AI: " + str(cleaned_content))
+                        job_id = submit_synthesis(cleaned_content)
+
+                        if job_id is not None:
+                            with st.spinner("Generating the video...It may take some minutes...but it's worth waiting"):
+                                while True:
+                                    status = get_synthesis(job_id)
+                                    if status == 'Succeeded':
+                                        logger.info('batch avatar synthesis job succeeded')
+                                        st.success("Video generated by Artificial Intelligence!")
+                                        video_url= st.session_state['video_url']
+                                        user_feedback = capture_feedback()
+                                        log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id)
+                                        break
+                                    elif status == 'Failed':
+                                        logger.error('batch avatar synthesis job failed')
+                                        st.error("Video generation failed. Please try again later")
+                                        break
+                                    else:
+                                        logger.info(f'batch avatar synthesis job is still running, status [{status}]')
+                                        time.sleep(5)                
                 
                 
                 
                     
        
     
-    st.sidebar.subheader('Suggested Example')
-    suggested_content = {
-        "Translate a Volvo Group´s public news": "Just select 1 language and click on the button 'Click here to translate' to check how the news 'Volvo Trucks’ SuperTruck 2 Exceeds Freight Efficiency Goals with Focus on Aerodynamics and Advanced Engineering' gets translated into the selected language.",
-        "Translate a Sentence, Phrase, or Word": "How can Volvo's innovative technologies improve road safety and environmental sustainability?",
-        "Translate a Technical Term to Another Language": "Autonomous driving features in Volvo's latest truck models.",
-        "Translate an Email or Message to Another Language": "Email regarding international collaboration between Volvo's different regional offices."
-    }
-    st.sidebar.write(suggested_content.get(technique, ""))
+    
+   
   
 
 
 
-
+   
 
    
 if __name__ == "__main__":
     main()
     app()
     
-        
+    
     
 
 
