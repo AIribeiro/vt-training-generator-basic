@@ -132,6 +132,7 @@ def log_to_azure_table(user_input, technique, content, language, video_url, user
         # Check if the 'UserInput' or 'Content' field is " " or "None" and delete the entity if it is
         if entity.get('UserInput') in [" ", "None"] or entity.get('Content') in [" ", "None"]:
             table_client.delete_entity(entity['PartitionKey'], entity['RowKey'])
+    user_input=""
 
 
 
@@ -340,7 +341,7 @@ suggested_content = {
 
 
 content=""    
-    
+user_input=""    
     
 def app():
     with st.expander("How to Use This App"):
@@ -367,7 +368,7 @@ def app():
     technique = st.sidebar.selectbox(
         'Select the Training generation Function You Want:', 
         #["Generate a training about AI and Analytics", ]
-        ["Generate a training about any other topic", "Bring your own content!","Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", ]
+        ["Bring your own content!","Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic", ]
     )
 
     # Define the mapping of languages to TTS voice codes
@@ -524,7 +525,7 @@ def app():
     
     
     
-    
+    user_input=""
     user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="", key="user_input")
 
     if st.button('Generate the Content for the Training'):
@@ -549,7 +550,8 @@ def app():
             )
             content = response.choices[0].text
             content= str(response.choices[0].text.strip())
-            chat_session_id = st.session_state['chat_session_id']
+            
+            chat_session_id = generate_new_session_id()
             #log_to_azure_table(user_input, technique, content)
 
             #return content
@@ -573,6 +575,8 @@ def app():
                                         user_feedback= "None"
                                         content=user_input
                                         log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id)
+                                        user_input=""
+                                        
                                         break
                                     elif status == 'Failed':
                                         logger.error('batch avatar synthesis job failed')
@@ -608,7 +612,7 @@ def app():
             )
             content = response.choices[0].text
             content= str(response.choices[0].text.strip())
-            chat_session_id = st.session_state['chat_session_id']
+            chat_session_id = generate_new_session_id()
             #log_to_azure_table(user_input, technique, content)
             
 
@@ -631,6 +635,7 @@ def app():
                                         video_url= st.session_state['video_url']
                                         user_feedback = "None"
                                         log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id)
+                                        user_input=""
                                         break
                                     elif status == 'Failed':
                                         logger.error('batch avatar synthesis job failed')
@@ -653,11 +658,11 @@ def app():
 
    
 
-   
+    user_input=""   
 if __name__ == "__main__":
     main()
     app()
-    
+    user_input=""
     
     
 
