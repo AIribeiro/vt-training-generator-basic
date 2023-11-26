@@ -244,19 +244,8 @@ def main():
     """
     st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
-prompt_ground_rules = """
-Your role as an AI Video Creator is to craft informative, concise explainer text from user inputs. Focus on these key areas:
 
-Content Fidelity: The Explainer text must accurately reflect the user's intended message, tone, and nuances. Ensure the core message is evident in the text format.
-Contextual Understanding: Incorporate Volvo Trucks-specific contexts, including industry terminologies and cultural nuances. Explainer text should demonstrate a thorough understanding of the automotive and trucking industries, aligning with corporate scenarios.
-Quality and Clarity: Produce clear, engaging, and straightforward Explainer text that support effective communication and decision-making in a diverse, global corporate environment.
-Professionalism: Maintain professionalism in content, ensuring that the narrative, tone, and visuals align with Volvo Trucks' brand values and corporate standards.
-Conciseness: Respond directly to the user's request, focusing on delivering only the essential message. Aim for brevity, with each Explainer text concisely presenting the content for quick understanding and decision-making. 
-Only answer to questions that are relevant or related to the Volvo Group.
-Output Requirement: Provide plain text only, without additional content or outlines, narration refences, etc. The text will be used directly for video generation, so ensure you provide me only the content, nothing else. Avoid adding works like Narrator, voiceover, video script, etc at the beginning of the text.
-Refer directly to the employees, when explaining the concepts provided by the user input.
 
-"""
 
 
 
@@ -310,7 +299,7 @@ def get_translation_explanation(action):
         "Generate a training about AI and Analytics": "Generate a video explainer about the AI and Analytics topic suggested by the user.",
         "Generate a training about Digital Marketing": "Generate a video explainer about the Digital Marketing topic suggested by the user.",
         "Generate a training about Truck Sales": "Generate a video explainer about the Trucks Sales topic suggested by the user.",
-        "Generate a training about any other topic.": "Generate a video explainer about the topic suggested by the user, but related to Volvo Trucks.",
+        "Generate a training about any other topic.": "Generate a video explainer about any topic suggested by the user, but related to Volvo Trucks.",
         "Bring your own content!": "If you already have the content for the video, just copy & paste it in the text area and generate the video."
         
     }
@@ -318,10 +307,10 @@ def get_translation_explanation(action):
 
 def get_translation_prompt(action):
     prompts = {
-        "Generate a training about AI and Analytics": "Generate a 1-minute video explainer about the AI and Analytics topic based on the user input: ",
-        "Generate a training about Digital Marketing": "Generate a 1-minute video explainer about the Digital Marketing topic based on the user input: ",
-        "Generate a training about Truck Sales": "Generate a 1-minute video explainer about the Trucks Sales topic based on the user input: ",
-        "Generate a training about any other topic.": "Generate a 1-minute video explainer about the topic based on the user input, that must be related to Volvo Trucks.",
+        "Generate a training about AI and Analytics": "Generate the text for a 1-minute video explainer as an expert on Artificial Intelligence and Data Analytics, based on the following user input: ",
+        "Generate a training about Digital Marketing": "Generate the text for a 1-minute video explainer as an expert on Digital Marketing, based on the following user input: ",
+        "Generate a training about Truck Sales": "Generate the text for a 1-minute video explainer as an expert on Trucks Sales, based on the following user input: ",
+        "Generate a training about any other topic.": "Generate the text for a 1-minute video explainer as an expert on the topic suggested by the user on the following user input (Do not accept topics not related or not relevant to Volvo Group): ",
         "Bring your own content!": "Generate an explainer video using only and exclusively the content provided by the user. "
         
     }
@@ -337,7 +326,26 @@ suggested_content = {
     }
 
 
+prompt_ground_rules = """
+Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context.
 
+Once a relevant topic is confirmed, your role as an AI Video Creator is to craft informative, concise explainer text. Focus on the following key areas:
+
+1. **Content Fidelity**: Ensure that the Explainer text accurately reflects the user's intended message, tone, and nuances. The core message should be clear and evident in the text format.
+
+2. **Contextual Understanding**: The text must incorporate Volvo Trucks-specific contexts, including industry terminologies and cultural nuances. Demonstrating a thorough understanding of the automotive and trucking industries, the text should align with Volvo Trucks' corporate scenarios.
+
+3. **Quality and Clarity**: Produce clear, engaging, and straightforward Explainer text that supports effective communication and decision-making in a diverse, global corporate environment.
+
+4. **Professionalism**: Maintain a high standard of professionalism in the content. Ensure that the narrative, tone, and visual elements align with Volvo Trucks' brand values and corporate standards.
+
+5. **Conciseness**: Respond directly to the user's request, focusing solely on delivering the essential message. Strive for brevity, ensuring each Explainer text is concise and facilitates quick understanding and decision-making.
+
+**Output Requirement**: Provide plain text only, without additional content, outlines, or narration references. The text will be used directly for video generation, so it should contain only the content, nothing else. Avoid including terms like 'Narrator', 'Voiceover', or 'Video Script' at the beginning of the text.
+
+Directly address Volvo Trucks' employees when explaining concepts provided by the user input. If the user input is not relevant to Volvo Trucks or our business context, inform the user and suggest providing a new, relevant input. 
+
+Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context. """
 
 
 content=""    
@@ -368,7 +376,7 @@ def app():
     technique = st.sidebar.selectbox(
         'Select the Training generation Function You Want:', 
         #["Generate a training about AI and Analytics", ]
-        ["Bring your own content!","Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic", ]
+        ["Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic.","Bring your own content!" ]
     )
 
     # Define the mapping of languages to TTS voice codes
@@ -523,127 +531,70 @@ def app():
     
     
     
-    
-    
-    user_input=""
+#the game starts here!    
+    # Initializing session state variables if they don't exist
+    if 'technique' not in st.session_state:
+        st.session_state['technique'] = ""
+    if 'language' not in st.session_state:
+        st.session_state['language'] = ""
+    if 'chat_answer' not in st.session_state:
+        st.session_state['chat_answer'] = ""
+    if 'video_url' not in st.session_state:
+        st.session_state['video_url'] = ""
+
+    # Setting the technique and language based on user selection
+    st.session_state['technique'] = technique
+    st.session_state['language'] = language
+
+    # User input for training content
     user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="", key="user_input")
 
     if st.button('Generate the Content for the Training'):
-        
         if technique == "Bring your own content!":
-            prompt = "Use the following user input: " + user_input + f" in {language}. Keep it exactly as it is. Do not change nothing." 
-            # gets the API Key from environment variable AZURE_OPENAI_API_KEY
-            client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview"
-            )
-
-
-
-            response = client.completions.create(model=deployment_id_4,  # Replace with your deployment ID
-                #engine=deployment_id_4,  # Replace with your deployment ID
-                prompt=prompt,
-                temperature=0.2,
-                max_tokens=2000,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0,
-                stop=None
-            )
-            content = response.choices[0].text
-            content= str(response.choices[0].text.strip())
-            
+            prompt = "Generate a new text as more similar as possible to the user input, based the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f". Your response must be in the following language: {language}." 
+            client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
+            response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
+            content = str(response.choices[0].text.strip())
+            st.session_state['chat_answer']= content
             chat_session_id = generate_new_session_id()
-            #log_to_azure_table(user_input, technique, content)
-
-            #return content
-            with st.spinner("Generating the content...It will take only 1 minute..."):
-
-
-                        cleaned_content = remove_sentences(user_input, sentences_to_remove)
-
-                        st.write("This is the content you provided: " + str(cleaned_content))
-                        job_id = submit_synthesis(user_input)
-
-                        if job_id is not None:
-                            with st.spinner("Generating the video...It may take some minutes...but it's worth waiting"):
-                                while True:
-                                    status = get_synthesis(job_id)
-                                    if status == 'Succeeded':
-                                        logger.info('batch avatar synthesis job succeeded')
-                                        st.success("Video generated by Artificial Intelligence!")
-                                        #user_feedback = capture_feedback()
-                                        video_url= st.session_state['video_url']
-                                        user_feedback= "None"
-                                        content=user_input
-                                        log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id)
-                                        user_input=""
-                                        
-                                        break
-                                    elif status == 'Failed':
-                                        logger.error('batch avatar synthesis job failed')
-                                        st.error("Video generation failed. Please try again later")
-                                        break
-                                    else:
-                                        logger.info(f'batch avatar synthesis job is still running, status [{status}]')
-                                        time.sleep(5) 
-            
-            
-            
-            
-            
-            
         else:
-            prompt = "According to the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f" in {language}."
-
-            # gets the API Key from environment variable AZURE_OPENAI_API_KEY
-            client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview"
-            )
-
-
-
-            response = client.completions.create(model=deployment_id_4,  # Replace with your deployment ID
-                #engine=deployment_id_4,  # Replace with your deployment ID
-                prompt=prompt,
-                temperature=0.2,
-                max_tokens=2000,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0,
-                stop=None
-            )
-            content = response.choices[0].text
-            content= str(response.choices[0].text.strip())
-            chat_session_id = generate_new_session_id()
-            #log_to_azure_table(user_input, technique, content)
+            prompt = "Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f" in {language}."
+            client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
+            response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
+            content = str(response.choices[0].text.strip())
+            st.session_state['chat_answer']= content
             
+        #Generate a new sessionID
+        chat_session_id = generate_new_session_id()
+        
+        # Display the generated content and ask for user confirmation
+        cleaned_content = remove_sentences(content, sentences_to_remove)
+        st.session_state['chat_answer'] = cleaned_content
+        st.write("This is the content to be used to generate the video: " + str(st.session_state['chat_answer']) + ". We may have applied some changes to the content to align it to the objectives of the application.")
+        
+        job_id = submit_synthesis(st.session_state['chat_answer'] if st.session_state['technique'] != "Bring your own content!" else st.session_state['user_input'])
+        if job_id is not None:
+                with st.spinner("Generating the video...It may take some minutes...but it's worth waiting"):
+                    while True:
+                        status = get_synthesis(job_id)
+                        if status == 'Succeeded':
+                            logger.info('batch avatar synthesis job succeeded')
+                            st.success("Video generated by Artificial Intelligence!")
+                            video_url = st.session_state['video_url']
+                            user_feedback = "None"  # Placeholder for feedback capturing
+                            content = st.session_state['chat_answer']
+                            log_to_azure_table(st.session_state['user_input'], st.session_state['technique'], content, st.session_state['language'], video_url, user_feedback, chat_session_id)
+                            break
+                        elif status == 'Failed':
+                            logger.error('batch avatar synthesis job failed')
+                            st.error("Video generation failed. Please try again later")
+                            break
+                        else:
+                            logger.info(f'batch avatar synthesis job is still running, status [{status}]')
+                            time.sleep(5)    
 
-            #return content
-            with st.spinner("Generating the content...It will take only 1 minute..."):
-
-
-                        cleaned_content = remove_sentences(content, sentences_to_remove)
-
-                        st.write("This is the video content generated by AI: " + str(cleaned_content))
-                        job_id = submit_synthesis(cleaned_content)
-
-                        if job_id is not None:
-                            with st.spinner("Generating the video...It may take some minutes...but it's worth waiting"):
-                                while True:
-                                    status = get_synthesis(job_id)
-                                    if status == 'Succeeded':
-                                        logger.info('batch avatar synthesis job succeeded')
-                                        st.success("Video generated by Artificial Intelligence!")
-                                        video_url= st.session_state['video_url']
-                                        user_feedback = "None"
-                                        log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id)
-                                        user_input=""
-                                        break
-                                    elif status == 'Failed':
-                                        logger.error('batch avatar synthesis job failed')
-                                        st.error("Video generation failed. Please try again later")
-                                        break
-                                    else:
-                                        logger.info(f'batch avatar synthesis job is still running, status [{status}]')
-                                        time.sleep(5)                
+    # ... [rest of the code] ...
+                
                 
                 
                 
