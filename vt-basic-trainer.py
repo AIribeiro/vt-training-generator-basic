@@ -16,7 +16,7 @@ from nltk.tokenize import sent_tokenize
 # Data Handling Imports
 import pandas as pd
 
-# Web Framework Imports...
+# Web Framework Imports
 import streamlit as st
 
 # Networking and HTTP Requests
@@ -244,7 +244,26 @@ def main():
     """
     st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
+prompt_ground_rules = """
+Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context.
 
+Once a relevant topic is confirmed, your role as an AI Video Creator is to craft informative, concise explainer text. Focus on the following key areas:
+
+1. **Content Fidelity**: Ensure that the Explainer text accurately reflects the user's intended message, tone, and nuances. The core message should be clear and evident in the text format.
+
+2. **Contextual Understanding**: The text must incorporate Volvo Trucks-specific contexts, including industry terminologies and cultural nuances. Demonstrating a thorough understanding of the automotive and trucking industries, the text should align with Volvo Trucks' corporate scenarios.
+
+3. **Quality and Clarity**: Produce clear, engaging, and straightforward Explainer text that supports effective communication and decision-making in a diverse, global corporate environment.
+
+4. **Professionalism**: Maintain a high standard of professionalism in the content. Ensure that the narrative, tone, and visual elements align with Volvo Trucks' brand values and corporate standards.
+
+5. **Conciseness**: Respond directly to the user's request, focusing solely on delivering the essential message. Strive for brevity, ensuring each Explainer text is concise and facilitates quick understanding and decision-making.
+
+**Output Requirement**: Provide plain text only, without additional content, outlines, or narration references. The text will be used directly for video generation, so it should contain only the content, nothing else. Avoid including terms like 'Narrator', 'Voiceover', or 'Video Script' at the beginning of the text.
+
+Directly address Volvo Trucks' employees when explaining concepts provided by the user input. If the user input is not relevant to Volvo Trucks or our business context, inform the user and suggest providing a new, relevant input. 
+
+Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context. """
 
 
 
@@ -326,30 +345,13 @@ suggested_content = {
     }
 
 
-prompt_ground_rules = """
-Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context.
 
-Once a relevant topic is confirmed, your role as an AI Video Creator is to craft informative, concise explainer text. Focus on the following key areas:
-
-1. **Content Fidelity**: Ensure that the Explainer text accurately reflects the user's intended message, tone, and nuances. The core message should be clear and evident in the text format.
-
-2. **Contextual Understanding**: The text must incorporate Volvo Trucks-specific contexts, including industry terminologies and cultural nuances. Demonstrating a thorough understanding of the automotive and trucking industries, the text should align with Volvo Trucks' corporate scenarios.
-
-3. **Quality and Clarity**: Produce clear, engaging, and straightforward Explainer text that supports effective communication and decision-making in a diverse, global corporate environment.
-
-4. **Professionalism**: Maintain a high standard of professionalism in the content. Ensure that the narrative, tone, and visual elements align with Volvo Trucks' brand values and corporate standards.
-
-5. **Conciseness**: Respond directly to the user's request, focusing solely on delivering the essential message. Strive for brevity, ensuring each Explainer text is concise and facilitates quick understanding and decision-making.
-
-**Output Requirement**: Provide plain text only, without additional content, outlines, or narration references. The text will be used directly for video generation, so it should contain only the content, nothing else. Avoid including terms like 'Narrator', 'Voiceover', or 'Video Script' at the beginning of the text.
-
-Directly address Volvo Trucks' employees when explaining concepts provided by the user input. If the user input is not relevant to Volvo Trucks or our business context, inform the user and suggest providing a new, relevant input. 
-
-Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context. """
 
 
 content=""    
-user_input=""    
+user_input=""   
+
+
     
 def app():
     with st.expander("How to Use This App"):
@@ -548,6 +550,11 @@ def app():
 
     # User input for training content
     user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="", key="user_input")
+
+    # Automatically check the length of the input
+    if len(user_input) < 100 and user_input:  # Check if input is present and less than 100 characters
+        st.error("In order to get a better training content, please provide more details in your input. The description should be at least 100 characters long.")
+
 
     if st.button('Generate the Content for the Training'):
         if technique == "Bring your own content!":
