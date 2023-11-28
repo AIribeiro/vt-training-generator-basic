@@ -77,7 +77,7 @@ def capture_feedback():
     user_feedback = str(feedback)
     return user_feedback
 
-def log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, chat_session_id):
+def log_to_azure_table(user_input, technique, content, language, video_url, user_feedback, avatar_style,chat_session_id):
     """
     Log user interaction data to Azure Table.
 
@@ -101,6 +101,7 @@ def log_to_azure_table(user_input, technique, content, language, video_url, user
         'Language': language,
         'Video': video_url,
         'Feedback': user_feedback,
+        'AvatarStyle': avatar_style,
         'SessionID': chat_session_id
     }
 
@@ -647,7 +648,7 @@ def app():
                             video_url = st.session_state['video_url']
                             user_feedback = "None"  # Placeholder for feedback capturing
                             content = st.session_state['chat_answer']
-                            log_to_azure_table(st.session_state['user_input'], st.session_state['technique'], content, st.session_state['language'], video_url, user_feedback, chat_session_id)
+                            log_to_azure_table(st.session_state['user_input'], st.session_state['technique'], content, st.session_state['language'], video_url, user_feedback, avatar_style, chat_session_id)
                             break
                         elif status == 'Failed':
                             logger.error('batch avatar synthesis job failed')
