@@ -347,10 +347,10 @@ suggested_content = {
     "Explain the transformative impact of AI and Analytics on Volvo Trucks. For example, focus on how these technologies optimize predictive maintenance, enhance fuel efficiency, or improve safety standards. Discuss real-life applications, potential cost savings, and the future outlook of AI in the trucking industry.",
 
     "Generate training about Digital Marketing": 
-    "Explore the strategic use of digital marketing in showcasing Volvo Trucks' innovations, including a detailed analysis of how digital marketing campaigns effectively introduce the latest range of Volvo electric trucks to a global audience. Highlight successful campaign examples, key digital channels used, and the role of data-driven marketing decisions.",
+    "Explain the strategic use of digital marketing in showcasing Volvo Trucks' innovations, including a detailed analysis of how digital marketing campaigns effectively introduce the latest range of Volvo electric trucks to a global audience. Highlight successful campaign examples, key digital channels used, and the role of data-driven marketing decisions.",
 
     "Generate training about Truck Sales": 
-    "Provide a comprehensive overview of effective sales strategies tailored for Volvo Trucks. Focus on approaches that resonate with customers in emerging markets. Include cultural considerations in sales tactics, adapting marketing materials for local markets, and leveraging local partnerships and collaborations for broader reach.",
+    "I need an explainer on effective sales strategies tailored for Volvo Trucks. The training must provide employees with approaches that resonate with our customers in emerging markets. Include cultural considerations in sales tactics, adapting marketing materials for local markets, and leveraging local partnerships and collaborations for broader reach.",
 
     "Generate training about any other topic": 
     "Choose a topic that underscores Volvo Trucks' commitment to innovation and sustainability. For example, describe Volvo Trucks' initiatives in sustainable manufacturing processes, the development of eco-friendly truck models, or the company's approach to reducing its carbon footprint and contributing to a greener future.",
