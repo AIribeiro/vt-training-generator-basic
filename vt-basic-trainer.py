@@ -249,9 +249,9 @@ def main():
     st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
 prompt_ground_rules = """
-Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context.
+Check if the topic requested by the user in the user input is relevant and related to the Volvo Trucks. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context.
 
-Once a relevant topic is confirmed, your role as an AI Video Creator is to craft informative, concise explainer text. Focus on the following key areas:
+Once a relevant topic is confirmed, your role as an AI Video Creator is to craft informative, concise explainer text to be used in a microtraining video. Focus on the following key areas:
 
 1. **Content Fidelity**: Ensure that the Explainer text accurately reflects the user's intended message, tone, and nuances. The core message should be clear and evident in the text format.
 
@@ -265,9 +265,9 @@ Once a relevant topic is confirmed, your role as an AI Video Creator is to craft
 
 **Output Requirement**: Provide plain text only, without additional content, outlines, or narration references. The text will be used directly for video generation, so it should contain only the content, nothing else. Avoid including terms like 'Narrator', 'Voiceover', or 'Video Script' at the beginning of the text.
 
-Directly address Volvo Trucks' employees when explaining concepts provided by the user input. If the user input is not relevant to Volvo Trucks or our business context, inform the user and suggest providing a new, relevant input. 
+Do not answer on behalf of Volvo Trucks, but directly address Volvo Trucks' employees when explaining concepts provided by the user input. If the user input is not relevant to Volvo Trucks or our business context, inform the user and suggest providing a new, relevant input. 
 
-Before processing any user input, check if the topic requested by the user in the user input is relevant and related to the Volvo Group. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context. """
+Before processing any user input, check if the topic requested by the user in the user input is relevant and related to Volvo Trucks. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context. """
 
 
 
@@ -288,6 +288,9 @@ content=""
 user_input=""   
 avatar_style=""
 get_user_feedback=""
+
+#Default avatar style
+avatar_style="graceful-standing" 
 
 
 if 'video_url' not in st.session_state:
@@ -332,23 +335,32 @@ def get_translation_explanation(action):
 
 def get_translation_prompt(action):
     prompts = {
-        "Generate a training about AI and Analytics": "Generate the text for a 1-minute video explainer as an expert on Artificial Intelligence and Data Analytics, based on the following user input: ",
-        "Generate a training about Digital Marketing": "Generate the text for a 1-minute video explainer as an expert on Digital Marketing, based on the following user input: ",
-        "Generate a training about Truck Sales": "Generate the text for a 1-minute video explainer as an expert on Trucks Sales, based on the following user input: ",
-        "Generate a training about any other topic.": "Generate the text for a 1-minute video explainer as an expert on the topic suggested by the user on the following user input (Do not accept topics not related or not relevant to Volvo Group): ",
-        "Bring your own content!": "Generate an explainer video using only and exclusively the content provided by the user. "
+        "Generate a training about AI and Analytics": "Generate the text for a micro-training video explainer as an expert on Artificial Intelligence and Data Analytics, based on the following user input: ",
+        "Generate a training about Digital Marketing": "Generate the text for a micro-training video explainer as an expert on Digital Marketing, based on the following user input: ",
+        "Generate a training about Truck Sales": "Generate the text for a micro-training video explainer as an expert on Trucks Sales, based on the following user input: ",
+        "Generate a training about any other topic.": "Generate the text for a micro-training video explainer as an expert on the topic suggested by the user on the following user input (Do not accept topics not related or not relevant to Volvo Group): ",
+        "Bring your own content!": "Generate the text for a micro-training explainer video using only and exclusively the content provided by the user. "
         
     }
     return prompts.get(action, "Topic not recognized or relevant to Volvo Trucks. Please try another.")
 
 suggested_content = {
-        "Generate a training about AI and Analytics": "Explain how AI and Analytics are used in predictive maintenance for Volvo Trucks.",
-        "Generate a training about Digital Marketing": "Explain the role of digital marketing in promoting the latest range of Volvo electric trucks",
-        "Generate a training about Truck Sales": "Provide an overview of effective sales strategies for Volvo Trucks in emerging markets.",
-        "Generate a training about any other topic.": "Describe the importance of sustainability in Volvo Trucks' manufacturing processes.",
-        "Bring your own content!": "If you already have the content for the video, just copy & paste it in the text area and generate the video."
-    
-    }
+    "Generate training about AI and Analytics": 
+    "Explain the transformative impact of AI and Analytics on Volvo Trucks. For example, focus on how these technologies optimize predictive maintenance, enhance fuel efficiency, or improve safety standards. Discuss real-life applications, potential cost savings, and the future outlook of AI in the trucking industry.",
+
+    "Generate training about Digital Marketing": 
+    "Explore the strategic use of digital marketing in showcasing Volvo Trucks' innovations, including a detailed analysis of how digital marketing campaigns effectively introduce the latest range of Volvo electric trucks to a global audience. Highlight successful campaign examples, key digital channels used, and the role of data-driven marketing decisions.",
+
+    "Generate training about Truck Sales": 
+    "Provide a comprehensive overview of effective sales strategies tailored for Volvo Trucks. Focus on approaches that resonate with customers in emerging markets. Include cultural considerations in sales tactics, adapting marketing materials for local markets, and leveraging local partnerships and collaborations for broader reach.",
+
+    "Generate training about any other topic": 
+    "Choose a topic that underscores Volvo Trucks' commitment to innovation and sustainability. For example, describe Volvo Trucks' initiatives in sustainable manufacturing processes, the development of eco-friendly truck models, or the company's approach to reducing its carbon footprint and contributing to a greener future.",
+
+    "Bring your own content!": 
+    "If you already have specific content in mind, such as a recent success story, a case study specific to your department, or an insightful industry trend analysis, simply copy & paste it in the text area. This is your opportunity to create a video that highlights unique insights, experiences, or expertise relevant to Volvo Trucks."
+}
+
 
 def select_avatar():
     avatar_style = image_select(
@@ -394,7 +406,7 @@ def app():
     technique = st.sidebar.selectbox(
         'Select the Training generation Function You Want:', 
         #["Generate a training about AI and Analytics", ]
-        ["Generate a training about AI and Analytics", "Generate a training about Digital Marketing", "Generate a training about Truck Sales", "Generate a training about any other topic.","Bring your own content!" ]
+        ["Generate training about AI and Analytics", "Generate training about Digital Marketing", "Generate training about Truck Sales", "Generate training about any other topic","Bring your own content!" ]
     )
 
     # Define the mapping of languages to TTS voice codes
@@ -419,39 +431,47 @@ def app():
     
     #Select the avatar
     #select_avatar()
-    
-    
+
     # Assuming image_select is a custom function or Streamlit widget for selecting images
     use_container_width=False
-    avatar_style_selection = image_select(
-        label="Select the Avatar you want to use on your video training:",
-        images=[
-            "images/avatars/lisa-casual-sitting-thumbnail.jpg",
-            "images/avatars/lisa-graceful-sitting-thumbnail.jpg",
-            "images/avatars/lisa-graceful-standing-thumbnail.jpg",
-            "images/avatars/lisa-technical-sitting-thumbnail.jpg",
-            "images/avatars/lisa-technical-standing-thumbnail.jpg",
-        ],
-        captions=["Lisa Casual sitting", "Lisa Graceful sitting", "Lisa Graceful standing", "Lisa Technical sitting", "Lisa Technical standing"],
-    )
 
-    # Debug: Print the returned selection for verification
-    #st.write("Debug - Selection: " + str(avatar_style_selection))
+    # Default selection
+    default_avatar = "images/avatars/lisa-graceful-standing-thumbnail.jpg"
 
-    # Mapping of captions to desired avatar_style values
+    # Mapping of image paths to desired avatar_style values
     avatar_mapping = {
+        "images/avatars/lisa-graceful-standing-thumbnail.jpg": "graceful-standing",
         "images/avatars/lisa-casual-sitting-thumbnail.jpg": "casual-sitting",
         "images/avatars/lisa-graceful-sitting-thumbnail.jpg": "graceful-sitting",
-        "images/avatars/lisa-graceful-standing-thumbnail.jpg": "graceful-standing",
         "images/avatars/lisa-technical-sitting-thumbnail.jpg": "technical-sitting",
         "images/avatars/lisa-technical-standing-thumbnail.jpg": "technical-standing"
     }
 
+    # Initialize avatar_style_selection with the default value
+    avatar_style_selection = default_avatar
+
+    # User selects an avatar
+    selected_avatar = image_select(
+        label="Select the Avatar you want to use on your video training:",
+        images=[
+            "images/avatars/lisa-graceful-standing-thumbnail.jpg",
+            "images/avatars/lisa-casual-sitting-thumbnail.jpg",
+            "images/avatars/lisa-graceful-sitting-thumbnail.jpg",
+            "images/avatars/lisa-technical-sitting-thumbnail.jpg",
+            "images/avatars/lisa-technical-standing-thumbnail.jpg",
+        ],
+        captions=["Graceful standing","Casual sitting", "Graceful sitting", "Technical sitting", "Technical standing"],
+    )
+
+    # Update avatar_style_selection if the user makes a choice
+    if selected_avatar:
+        avatar_style_selection = selected_avatar
+
     # Assigning the corresponding value to avatar_style based on the user's selection
-    # Using a default value for cases where the selection doesn't match any key
-    avatar_style = avatar_mapping.get(avatar_style_selection, "unknown-style")
+    avatar_style = avatar_mapping.get(avatar_style_selection, "graceful-standing")
 
     #st.write("Selected avatar style: " + str(avatar_style))
+
 
 
 
@@ -461,7 +481,7 @@ def app():
     
     st.sidebar.subheader('Pick your area of interest')
     st.sidebar.write(get_translation_explanation(technique)) 
-    st.sidebar.subheader('Suggested Example')
+    st.sidebar.subheader('Copy & Paste the example below in the text area to get started.')
     
     st.sidebar.write(suggested_content.get(technique, ""))
 
@@ -610,20 +630,24 @@ def app():
     user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="", key="user_input")
 
     # Automatically check the length of the input
-    if len(user_input) < 100 and user_input:  # Check if input is present and less than 100 characters
-        st.error("In order to get a better training content, please provide more details in your input. The description should be at least 100 characters long.")
+    if user_input:
+        if len(user_input) < 100:
+            st.error("In order to get a better training content, please provide more details in your input. The description should be at least 100 characters long.")
+        elif len(user_input) > 2000:
+            st.error("Your input is too long. Please limit the description to 2000 characters or less.")
+
 
 
     if st.button('Generate the Content for the Training'):
         if technique == "Bring your own content!":
-            prompt = "Generate a new text as more similar as possible to the user input, based the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f". Your response must be in the following language: {language}." 
+            prompt = "Generate a new text as more similar as possible to the following user input: " + user_input + f". Your response must be in the following language: {language}. Ensure it fully respects the following ground rules: " + str(prompt_ground_rules) 
             client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
             response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
             content = str(response.choices[0].text.strip())
             st.session_state['chat_answer']= content
             chat_session_id = generate_new_session_id()
         else:
-            prompt = "Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules) + str(get_translation_prompt(technique)) + user_input + f" in {language}."
+            prompt = str(get_translation_prompt(technique)) + user_input + f" in {language}.Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules)
             client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
             response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
             content = str(response.choices[0].text.strip())
