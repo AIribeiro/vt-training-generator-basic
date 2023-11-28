@@ -153,6 +153,9 @@ azure-functions
 azure-storage-blob
 streamlit
 streamlit-feedback
+streamlit-image-select
 streamlit-player
 openai
 nltk
+
+

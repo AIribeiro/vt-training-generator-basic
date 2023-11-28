@@ -8,6 +8,8 @@ import uuid
 import time
 from datetime import datetime, timedelta
 from collections.abc import MutableMapping
+from PIL import Image
+import numpy as np
 
 # Natural Language Processing Imports
 import nltk
@@ -31,6 +33,7 @@ from azure.core.credentials import AzureNamedKeyCredential, AzureSasCredential
 # Streamlit Extensions for Feedback and Media Playback
 from streamlit_feedback import streamlit_feedback
 from streamlit_player import st_player
+from streamlit_image_select import image_select
 
 # Logging and File System Utilities
 import logging
@@ -280,7 +283,9 @@ chat_session_id_temp=""
 technique=""
 chat_interactions=0
 
-
+content=""    
+user_input=""   
+avatar_style=""
 
 
 
@@ -344,12 +349,21 @@ suggested_content = {
     
     }
 
+def select_avatar():
+    avatar_style = image_select(
+    label="Select the Avatar",
+    images=[
+            "images/lisa-casual-sitting-thumbnail.jpg",
+            "images/lisa-graceful-sitting-thumbnail.jpg",
+            "images/lisa-graceful-standing-thumbnail.jpg",
+            Image.open("images/lisa-technical-sitting-thumbnail.jpg"),
+            np.array(Image.open("images/lisa-technical-standing-thumbnail.jpg")),
+      ],
+    captions=["Lisa Casual sitting", "Lisa Graceful sitting", "Lisa Graceful standing", "Lisa Technical sitting", "Lisa Technical standing"],)
+    return avatar_style
 
 
 
-
-content=""    
-user_input=""   
 
 
     
@@ -401,6 +415,48 @@ def app():
     selected_voice = language_to_voice[language]
     
     
+    #Select the avatar
+    #select_avatar()
+    
+    
+    # Assuming image_select is a custom function or Streamlit widget for selecting images
+    use_container_width=False
+    avatar_style_selection = image_select(
+        label="Select the Avatar",
+        images=[
+            "images/avatars/lisa-casual-sitting-thumbnail.jpg",
+            "images/avatars/lisa-graceful-sitting-thumbnail.jpg",
+            "images/avatars/lisa-graceful-standing-thumbnail.jpg",
+            "images/avatars/lisa-technical-sitting-thumbnail.jpg",
+            "images/avatars/lisa-technical-standing-thumbnail.jpg",
+        ],
+        captions=["Lisa Casual sitting", "Lisa Graceful sitting", "Lisa Graceful standing", "Lisa Technical sitting", "Lisa Technical standing"],
+    )
+
+    # Debug: Print the returned selection for verification
+    #st.write("Debug - Selection: " + str(avatar_style_selection))
+
+    # Mapping of captions to desired avatar_style values
+    avatar_mapping = {
+        "images/avatars/lisa-casual-sitting-thumbnail.jpg": "casual-sitting",
+        "images/avatars/lisa-graceful-sitting-thumbnail.jpg": "graceful-sitting",
+        "images/avatars/lisa-graceful-standing-thumbnail.jpg": "graceful-standing",
+        "images/avatars/lisa-technical-sitting-thumbnail.jpg": "technical-sitting",
+        "images/avatars/lisa-technical-standing-thumbnail.jpg": "technical-standing"
+    }
+
+    # Assigning the corresponding value to avatar_style based on the user's selection
+    # Using a default value for cases where the selection doesn't match any key
+    avatar_style = avatar_mapping.get(avatar_style_selection, "unknown-style")
+
+    #st.write("Selected avatar style: " + str(avatar_style))
+
+
+
+    
+    
+    
+    
     st.sidebar.subheader('Pick your area of interest')
     st.sidebar.write(get_translation_explanation(technique)) 
     st.sidebar.subheader('Suggested Example')
@@ -445,7 +501,7 @@ def app():
             "properties": {
                 "customized": False, # set to True if you want to use customized avatar
                 "talkingAvatarCharacter": "lisa",  # talking avatar character
-                "talkingAvatarStyle": "graceful-sitting",  # talking avatar style, required for prebuilt avatar, optional for custom avatar
+                "talkingAvatarStyle": avatar_style,  # talking avatar style, required for prebuilt avatar, optional for custom avatar
                 "videoFormat": "mp4",  # mp4 or webm, webm is required for transparent background
                 "videoCodec": "h264",  # hevc, h264 or vp9, vp9 is required for transparent background; default is hevc
                 "subtitleType": "soft_embedded",
