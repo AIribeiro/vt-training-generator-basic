@@ -249,25 +249,23 @@ def main():
     st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
 prompt_ground_rules = """
-Check if the topic requested by the user in the user input is relevant and related to the Volvo Trucks. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context.
+**Relevance Check**: Before processing any user input, assess if the topic is pertinent to Volvo Trucks. If the topic is unrelated or irrelevant to our business, politely inform the user and request a more suitable topic aligned with our business context.
 
-Once a relevant topic is confirmed, your role as an AI Video Creator is to craft informative, concise explainer text to be used in a microtraining video. Focus on the following key areas:
+**Role as AI Video Creator**: Craft informative, concise explainer text for microtraining videos. Focus on these key areas:
 
-1. **Content Fidelity**: Ensure that the Explainer text accurately reflects the user's intended message, tone, and nuances. The core message should be clear and evident in the text format.
+- **Content Fidelity**: The text must accurately convey the user's intended message, tone, and nuances. Ensure clarity and prominence of the core message.
+- **Contextual Understanding**: Incorporate specific contexts related to Volvo Trucks, including industry jargon and cultural nuances. The text should demonstrate an in-depth understanding of the automotive and trucking sectors, aligning with our corporate scenarios.
+- **Quality and Clarity**: Create clear, engaging, and straightforward text that supports effective communication and decision-making within a global corporate setting.
+- **Professionalism**: Uphold a professional tone throughout. Ensure the narrative and tone are in line with Volvo Trucks' brand values and standards.
+- **Conciseness**: Directly address the user's request, focusing on delivering only the essential message in a brief, comprehensible format.
 
-2. **Contextual Understanding**: The text must incorporate Volvo Trucks-specific contexts, including industry terminologies and cultural nuances. Demonstrating a thorough understanding of the automotive and trucking industries, the text should align with Volvo Trucks' corporate scenarios.
+**Direct Address**: When explaining concepts from user inputs, speak directly to Volvo Trucks' employees. Do not respond as a representative of Volvo Trucks but as an informative source. If the input is off-topic, guide the user to provide relevant content.
 
-3. **Quality and Clarity**: Produce clear, engaging, and straightforward Explainer text that supports effective communication and decision-making in a diverse, global corporate environment.
+**Avoidance of Irrelevant Content**: Reiterate the importance of topic relevance to Volvo Trucks at the beginning and end of the guidelines to emphasize this point. If a topic does not relate to our business context, do not proceed with content generation.
 
-4. **Professionalism**: Maintain a high standard of professionalism in the content. Ensure that the narrative, tone, and visual elements align with Volvo Trucks' brand values and corporate standards.
+**Output Requirement**: Provide only plain text, free from additional content or narration references. This text will be used directly in video generation, so it should be concise and complete on its own. Use varied expressions to avoid repetition of 'Volvo Trucks', such as 'we', 'us', 'our company', or 'our colleagues', when contextually appropriate.
+"""
 
-5. **Conciseness**: Respond directly to the user's request, focusing solely on delivering the essential message. Strive for brevity, ensuring each Explainer text is concise and facilitates quick understanding and decision-making.
-
-**Output Requirement**: Provide plain text only, without additional content, outlines, or narration references. The text will be used directly for video generation, so it should contain only the content, nothing else. Avoid including terms like 'Narrator', 'Voiceover', or 'Video Script' at the beginning of the text.
-
-Do not answer on behalf of Volvo Trucks, but directly address Volvo Trucks' employees when explaining concepts provided by the user input. If the user input is not relevant to Volvo Trucks or our business context, inform the user and suggest providing a new, relevant input. 
-
-Before processing any user input, check if the topic requested by the user in the user input is relevant and related to Volvo Trucks. If the topic is not related to Volvo Trucks or is irrelevant to our business context, do not generate any content. Instead, inform the user that the input is not relevant and request a topic that aligns with Volvo Trucks' business context. """
 
 
 
@@ -468,7 +466,7 @@ def app():
         avatar_style_selection = selected_avatar
 
     # Assigning the corresponding value to avatar_style based on the user's selection
-    avatar_style = avatar_mapping.get(avatar_style_selection, "graceful-standing")
+    avatar_style = avatar_mapping.get(avatar_style_selection)
 
     #st.write("Selected avatar style: " + str(avatar_style))
 
@@ -629,16 +627,23 @@ def app():
     # User input for training content
     user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="", key="user_input")
 
-    # Automatically check the length of the input
+    # Flag to track if the input is valid
+    is_input_valid = False
+
+    # Automatically check the length of the input in terms of approximate tokens
     if user_input:
-        if len(user_input) < 100:
-            st.error("In order to get a better training content, please provide more details in your input. The description should be at least 100 characters long.")
-        elif len(user_input) > 2000:
-            st.error("Your input is too long. Please limit the description to 2000 characters or less.")
+        approx_tokens = len(user_input) / 4  # Rough estimation of tokens
+        if approx_tokens < 50:
+            st.error("Please provide more details in your input. The description should be at least 200 characters long for better results.")
+        elif approx_tokens > 2000:
+            st.error("Your input is too long. Please limit the description to 8000 characters or less.")
+        else:
+            is_input_valid = True  # Input is valid only if it's within the c
 
 
 
-    if st.button('Generate the Content for the Training'):
+
+    if st.button('Generate the Content for the Training')and is_input_valid:
         if technique == "Bring your own content!":
             prompt = "Generate a new text as more similar as possible to the following user input: " + user_input + f". Your response must be in the following language: {language}. Ensure it fully respects the following ground rules: " + str(prompt_ground_rules) 
             client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
