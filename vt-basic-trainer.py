@@ -370,12 +370,13 @@ def select_avatar():
 def app():
     with st.expander("How to Use This App"):
         st.write("""
-            1. Select a Training generation Function from the sidebar. ( At this moment, only AI & Data Analytics training generation is available. More options will be added soon.
+            1. Select a Training generation Function from the sidebar.
             2. Choose a language for Training.
-            3. Enter a detailed description of the training you want to create in the provided text area.If you already have the content to generate the video, simply choose the option "Bring Your Own Content" and add it to the text box.
-            4. Click 'Generate the content for the training' to get the AI-generated Content.
-            5. Watch the training.
-            6. If the generated video is OK, download it by clicking on the link "Click here to download the video".
+            3. Select one of the 5 available avatars.
+            4. Enter a detailed description of the training you want to create in the provided text area.If you already have the content to generate the video, simply choose the option "Bring Your Own Content" and add it to the text box.
+            5. Click 'Generate the content for the training' to get the AI-generated Content.
+            6. Watch the training.
+            7. If the generated video is OK, download it by clicking on the link "Click here to download the video".
         """)
 
     with st.expander("**Important Note:**"):
@@ -422,7 +423,7 @@ def app():
     # Assuming image_select is a custom function or Streamlit widget for selecting images
     use_container_width=False
     avatar_style_selection = image_select(
-        label="Select the Avatar",
+        label="Select the Avatar you want to use on your video training:",
         images=[
             "images/avatars/lisa-casual-sitting-thumbnail.jpg",
             "images/avatars/lisa-graceful-sitting-thumbnail.jpg",
