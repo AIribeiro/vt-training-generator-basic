@@ -625,7 +625,7 @@ def app():
     st.session_state['language'] = language
 
     # User input for training content
-    user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees.... :", value="", key="user_input")
+    user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees. REMEMBER: Only content relevant to Volvo Trucks will be processed. ", value="", key="user_input")
 
     # Flag to track if the input is valid
     is_input_valid = False
@@ -664,7 +664,7 @@ def app():
         # Display the generated content and ask for user confirmation
         cleaned_content = remove_sentences(content, sentences_to_remove)
         st.session_state['chat_answer'] = cleaned_content
-        st.write("This is the content to be used to generate the video: " + str(st.session_state['chat_answer']) + ". We may have applied some changes to the content to align it to the objectives of the application.")
+        st.write("This is the content to be used to generate the video: " + str(st.session_state['chat_answer']) + ". Note: In certain cases, AI may apply some changes to the content to align it to the objectives of the application.")
         
         job_id = submit_synthesis(st.session_state['chat_answer'] if st.session_state['technique'] != "Bring your own content!" else st.session_state['user_input'])
         if job_id is not None:
