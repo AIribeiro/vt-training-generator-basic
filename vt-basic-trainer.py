@@ -251,7 +251,7 @@ def main():
 prompt_ground_rules = """
 **Relevance Check**: Before processing any user input, assess if the topic is pertinent to Volvo Trucks. If the topic is unrelated or irrelevant to our business, politely inform the user and request a more suitable topic aligned with our business context.
 
-**Role as AI Video Creator**: Craft informative, concise explainer text for microtraining videos. Focus on these key areas:
+Your Role as AI content Creator is to Craft informative, concise explainer text for microtraining videos. Focus on these key areas:
 
 - **Content Fidelity**: The text must accurately convey the user's intended message, tone, and nuances. Ensure clarity and prominence of the core message.
 - **Contextual Understanding**: Incorporate specific contexts related to Volvo Trucks, including industry jargon and cultural nuances. The text should demonstrate an in-depth understanding of the automotive and trucking sectors, aligning with our corporate scenarios.
@@ -264,6 +264,7 @@ prompt_ground_rules = """
 **Avoidance of Irrelevant Content**: Reiterate the importance of topic relevance to Volvo Trucks at the beginning and end of the guidelines to emphasize this point. If a topic does not relate to our business context, do not proceed with content generation.
 
 **Output Requirement**: Provide only plain text, free from additional content or narration references. This text will be used directly in video generation, so it should be concise and complete on its own. Use varied expressions to avoid repetition of 'Volvo Trucks', such as 'we', 'us', 'our company', or 'our colleagues', when contextually appropriate.
+ 
 """
 
 
@@ -625,7 +626,7 @@ def app():
     st.session_state['language'] = language
 
     # User input for training content
-    user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees. REMEMBER: Only content relevant to Volvo Trucks will be processed. ", value="", key="user_input")
+    user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees. REMEMBER: Only content relevant to Volvo Trucks will be processed. You can make it relevant for Volvo Trucks by mentioning for example, expressions like 'for volvo trucks employees', ' how can volvo trucks employees...', etc. ", value="", key="user_input")
 
     # Flag to track if the input is valid
     is_input_valid = False
@@ -652,7 +653,7 @@ def app():
             st.session_state['chat_answer']= content
             chat_session_id = generate_new_session_id()
         else:
-            prompt = str(get_translation_prompt(technique)) + user_input + f" in {language}.Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules)
+            prompt = "" + str(get_translation_prompt(technique)) + user_input + f" in {language}.Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules)
             client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
             response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
             content = str(response.choices[0].text.strip())
