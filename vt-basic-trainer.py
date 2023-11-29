@@ -653,7 +653,7 @@ def app():
             st.session_state['chat_answer']= content
             chat_session_id = generate_new_session_id()
         else:
-            prompt = "" + str(get_translation_prompt(technique)) + user_input + f" in {language}.Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules)
+            prompt = "" + str(get_translation_prompt(technique)) + user_input + f" and Your response must be in the following language: {language}. Ensure full compliance with the following ground rules: " + str(prompt_ground_rules)
             client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
             response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
             content = str(response.choices[0].text.strip())
