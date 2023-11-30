@@ -225,7 +225,7 @@ def remove_sentences(content, sentences_to_remove):
 
     return cleaned_content
 
-sentences_to_remove = ["The video should be concise, informative, and visually engaging, with a professional tone and appropriate for a corporate setting. The video should be tailored to directly address the user's request, focusing solely on delivering the essential message. The video should be no longer than 1 minute.", "<|im_end|>", "The output should be:", "The video should be clear, concise, and engaging, utilizing appropriate industry jargon and aligning with corporate scenarios.", "The video should be tailored to a corporate audience and should be clear, concise, and engaging. Ensure that the video accurately captures the user's intended meaning and aligns with Volvo Trucks' brand and values.", ".<|im_end|>", "User Input: ", "Output: ","Topic:","Script:", "Narrator:", "Voiceover:", "Topic: ","[Narrator]", "This is the video content: Narrator: ", "Video Script:", "Video Script: ", "Voiceover:", "Voiceover: ", " [Narrator] ", "[Polish Voiceover]","Narrator:", "Narrator", "Narrator: ", "Narrative:", "Narrative: ", "Narrador:", "Narrador: "]
+sentences_to_remove = ["The video should be concise, informative, and visually engaging, with a professional tone and appropriate for a corporate setting. The video should be tailored to directly address the user's request, focusing solely on delivering the essential message. The video should be no longer than 1 minute.", "<|im_end|>", "The output should be:", "The video should be clear, concise, and engaging, utilizing appropriate industry jargon and aligning with corporate scenarios.", "The video should be tailored to a corporate audience and should be clear, concise, and engaging. Ensure that the video accurately captures the user's intended meaning and aligns with Volvo Trucks' brand and values.", ".<|im_end|>", "User Input: ", "Output: ","Topic:","Script:", "Narrator:", "Voiceover:", "Topic: ","[Narrator]", "This is the video content: Narrator: ", "Video Script:", "Video Script: ", "Voiceover:", "Voiceover: ", " [Narrator] ", "[Polish Voiceover]","Narrator:", "Narrator", "Narrator: ", "Narrative:", "Narrative: ", "Narrador:", "Narrador: ", "Resposta:", "Resposta: ", "Réponse: ", "Réponse:"]
 
 
     
@@ -249,21 +249,15 @@ def main():
     st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
 prompt_ground_rules = """
-**Relevance Check**: Before processing any user input, assess if the topic is pertinent to Volvo Trucks. If the topic is unrelated or irrelevant to our business, politely inform the user and request a more suitable topic aligned with our business context.
-
-Your Role as AI content Creator is to Craft informative, concise explainer text for microtraining videos. Focus on these key areas:
-
-- **Content Fidelity**: The text must accurately convey the user's intended message, tone, and nuances. Ensure clarity and prominence of the core message.
-- **Contextual Understanding**: Incorporate specific contexts related to Volvo Trucks, including industry jargon and cultural nuances. The text should demonstrate an in-depth understanding of the automotive and trucking sectors, aligning with our corporate scenarios.
-- **Quality and Clarity**: Create clear, engaging, and straightforward text that supports effective communication and decision-making within a global corporate setting.
-- **Professionalism**: Uphold a professional tone throughout. Ensure the narrative and tone are in line with Volvo Trucks' brand values and standards.
-- **Conciseness**: Directly address the user's request, focusing on delivering only the essential message in a brief, comprehensible format.
-
-**Direct Address**: When explaining concepts from user inputs, speak directly to Volvo Trucks' employees. Do not respond as a representative of Volvo Trucks but as an informative source. If the input is off-topic, guide the user to provide relevant content.
-
-**Avoidance of Irrelevant Content**: Reiterate the importance of topic relevance to Volvo Trucks at the beginning and end of the guidelines to emphasize this point. If a topic does not relate to our business context, do not proceed with content generation.
-
-**Output Requirement**: Provide only plain text, free from additional content or narration references. This text will be used directly in video generation, so it should be concise and complete on its own. Use varied expressions to avoid repetition of 'Volvo Trucks', such as 'we', 'us', 'our company', or 'our colleagues', when contextually appropriate.
+Your Role as AI content Creator is to craft informative explainer text to be used on microtraining videos.
+Before processing any user input, assess if the topic is pertinent to Volvo Trucks. If the topic is unrelated or irrelevant to our business, politely inform the user and request a more suitable topic aligned with our business context.
+The text must accurately convey the user's intended message, tone, and nuances. Ensure clarity and prominence of the core message.
+Incorporate specific contexts related to Volvo Trucks, including industry jargon and cultural nuances. The text should demonstrate an in-depth understanding of the commercial vehicles and trucking sectors, aligning with our corporate scenarios.
+Generate clear, engaging, and straightforward text that supports effective communication and decision-making within a global corporate setting.
+Uphold a professional tone throughout. Ensure the narrative and tone are in line with Volvo Trucks' brand values and standards.
+Directly address the user's request, focusing on delivering only the essential message in a brief, comprehensible format.
+When explaining concepts from user inputs, speak directly to Volvo Trucks' employees. Do not respond as a representative of Volvo Trucks but as an informative source. If the input is off-topic, guide the user to provide relevant content.
+Provide only plain text, free from additional content or narration references. This text will be used directly in video generation, so it should be concise but complete on its own. Use varied expressions to avoid repetition of 'Volvo Trucks', such as 'we', 'us', 'our company', or 'our colleagues', when contextually appropriate.
  
 """
 
@@ -626,7 +620,7 @@ def app():
     st.session_state['language'] = language
 
     # User input for training content
-    user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Start for example with: Generate training explaining the value of data literacy for Volvo Trucks employees. REMEMBER: Only content relevant to Volvo Trucks will be processed. You can make it relevant for Volvo Trucks by mentioning for example, expressions like 'for volvo trucks employees', ' how can volvo trucks employees...', etc. ", value="", key="user_input")
+    user_input = st.text_area("Describe with more details as possible what the training you want to generate is about. Before proceed, ensure that you selected the right function on the sidebar (Analytics, Marketing, Truck Sales, Any content or your own content). REMEMBER: Only content relevant to Volvo Trucks will be processed. You can make it relevant for Volvo Trucks by mentioning for example, expressions like 'for volvo trucks employees', ' how can volvo trucks employees...', etc. ", value="", key="user_input")
 
     # Flag to track if the input is valid
     is_input_valid = False
@@ -653,7 +647,7 @@ def app():
             st.session_state['chat_answer']= content
             chat_session_id = generate_new_session_id()
         else:
-            prompt = "" + str(get_translation_prompt(technique)) + user_input + f" and Your response must be in the following language: {language}. Ensure full compliance with the following ground rules: " + str(prompt_ground_rules)
+            prompt = "" + str(get_translation_prompt(technique)) + user_input + f" in {language}.Ensuring full compliance to the following ground rules: " + str(prompt_ground_rules)
             client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2", azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/", api_version="2023-09-15-preview")
             response = client.completions.create(model=deployment_id_4, prompt=prompt, temperature=0.2, max_tokens=2000, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None)
             content = str(response.choices[0].text.strip())
