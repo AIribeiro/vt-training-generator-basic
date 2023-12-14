@@ -41,6 +41,20 @@ import os
 import sys
 from pathlib import Path
 
+#from openai import AzureOpenAI
+from openai import AzureOpenAI
+
+client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",
+azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/",
+api_version="2023-09-15-preview")
+
+
+
+
+# Deployment Configuration
+deployment_id_4 = "vt-text-davinci-003"  # Set the deployment ID
+deployment_id_turbo ="vt-gpt-35-turbo"
+
 # Initialize a unique identifier for the current session
 now = str(uuid.uuid4())
 
@@ -159,25 +173,7 @@ DESCRIPTION = "Simple avatar synthesis description"
 # The service host suffix.
 SERVICE_HOST = "customvoice.api.speech.microsoft.com"
 
-# OpenAI Configuration
-#openai.api_key = "35fcd9150f044fdcbca33b5c3318a1f2"  # Set OpenAI API key
-#openai.api_type = "azure"  # Set the API type to Azure
-#openai.api_base = "https://vt-generative-ai-dev.openai.azure.com/"  # Set the API endpoint
-#openai.api_version = "2023-09-15-preview"  # Set the API version
 
-#from openai import AzureOpenAI
-from openai import AzureOpenAI
-
-client = AzureOpenAI(api_key="35fcd9150f044fdcbca33b5c3318a1f2",
-azure_endpoint="https://vt-generative-ai-dev.openai.azure.com/",
-api_version="2023-09-15-preview")
-
-
-
-
-# Deployment Configuration
-deployment_id_4 = "vt-text-davinci-003"  # Set the deployment ID
-deployment_id_turbo ="vt-gpt-35-turbo"
 
 
 
@@ -412,7 +408,8 @@ def app():
         "Polish": "pl-PL-AgnieszkaNeural",
         "Hindi": "hi-IN-SwaraNeural",  
         "Chinese": "zh-CN-XiaoxiaoNeural",
-        "French": "fr-FR-DeniseNeural"
+        "French": "fr-FR-DeniseNeural",
+        "Turkish": "tr-TR-AhmetNeural"
     }
 
     # Dropdown for language selection
