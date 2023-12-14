@@ -313,10 +313,10 @@ if 'chatbot_answer' not in st.session_state:
 
 def get_translation_explanation(action):
     explanations = {
-        "Generate a training about AI and Analytics": "Generate a video explainer about the AI and Analytics topic suggested by the user.",
-        "Generate a training about Digital Marketing": "Generate a video explainer about the Digital Marketing topic suggested by the user.",
-        "Generate a training about Truck Sales": "Generate a video explainer about the Trucks Sales topic suggested by the user.",
-        "Generate a training about any other topic.": "Generate a video explainer about any topic suggested by the user, but related to Volvo Trucks.",
+        "Generate training about AI and Analytics": "Generate a video explainer about the AI and Analytics topic suggested by the user.",
+        "Generate training about Digital Marketing": "Generate a video explainer about the Digital Marketing topic suggested by the user.",
+        "Generate training about Truck Sales": "Generate a video explainer about the Trucks Sales topic suggested by the user.",
+        "Generate training about any other topic": "Generate a video explainer about any topic suggested by the user, but related to Volvo Trucks.",
         "Bring your own content!": "If you already have the content for the video, just copy & paste it in the text area and generate the video."
         
     }
@@ -400,17 +400,24 @@ def app():
 
     # Define the mapping of languages to TTS voice codes
     language_to_voice = {
-        "English": "en-US-JennyNeural",
-        "Swedish": "sv-SE-SofieNeural",
-        "Brazilian Portuguese": "pt-BR-GiovannaNeural",
-        "Italian": "it-IT-IsabellaNeural",
-        "Spanish": "es-ES-ElviraNeural",
-        "Polish": "pl-PL-AgnieszkaNeural",
-        "Hindi": "hi-IN-SwaraNeural",  
-        "Chinese": "zh-CN-XiaoxiaoNeural",
-        "French": "fr-FR-DeniseNeural",
-        "Turkish": "tr-TR-EmelNeural"
-    }
+    "Brazilian Portuguese": "pt-BR-GiovannaNeural",
+    "Chinese": "zh-CN-XiaoxiaoNeural",
+    "Czech": "cs-CZ-VlastaNeural",
+    "Dutch (Belgium)": "nl-BE-DenaNeural",
+    "Dutch (Netherlands)": "nl-NL-FennaNeural",
+    "English": "en-US-JennyNeural",
+    "French": "fr-FR-DeniseNeural",
+    "German": "de-DE-KatjaNeural",
+    "Hindi": "hi-IN-SwaraNeural",
+    "Italian": "it-IT-IsabellaNeural",
+    "Japanese": "ja-JP-NanamiNeural",
+    "Polish": "pl-PL-AgnieszkaNeural",
+    "Spanish": "es-ES-ElviraNeural",
+    "Swedish": "sv-SE-SofieNeural",
+    "Turkish": "tr-TR-EmelNeural",
+    "Ukrainian": "uk-UA-PolinaNeural"
+}
+
 
     # Dropdown for language selection
     language = st.sidebar.radio("Select the Language for the training:", tuple(language_to_voice.keys()), index=0)
