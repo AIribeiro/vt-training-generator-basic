@@ -409,7 +409,7 @@ def app():
         "Hindi": "hi-IN-SwaraNeural",  
         "Chinese": "zh-CN-XiaoxiaoNeural",
         "French": "fr-FR-DeniseNeural",
-        "Turkish": "tr-TR-AhmetNeural"
+        "Turkish": "tr-TR-EmelNeural"
     }
 
     # Dropdown for language selection
